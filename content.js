@@ -73,25 +73,18 @@ function getDivId(name, year) {
 
 function makeRequestAndAddRating(name, year) {
     var url = "https://www.omdbapi.com/?apikey=<secret_key>&t=" + encodeURI(name) + "&y=" + year + "tomatoes=true";
-    $.ajax({
-        type: "GET",
-        url: url,
-        contentType: 'application/json',
-        xhrFields: {
-            withCredentials: true
-        },
-        dataType: 'json',
-        async: false,
-        success: function(apiResponse) {
-            var imdbRating = apiResponse["imdbRating"];
-            var rottenRating = extractRottenTomatoesRating(apiResponse["Ratings"]);
-            window.sessionStorage.setItem(name + ":" + year, imdbRating);
-            window.sessionStorage.setItem("rotten:" + name + ":" + year, rottenRating);
-            addIMDBRating(imdbRating, name, year);
-            addRottenRating(rottenRating, name, year);
-        },
-        error: function(data) {}
-    });
+    fetch(url).then((res) => {
+        if (res.status === 200) {
+            res.json().then((data) => {
+                var imdbRating = data["imdbRating"];
+                var rottenRating = extractRottenTomatoesRating(data["Ratings"]);
+                window.sessionStorage.setItem(name + ":" + year, imdbRating);
+                window.sessionStorage.setItem("rotten:" + name + ":" + year, rottenRating);
+                addIMDBRating(imdbRating, name, year);
+                addRottenRating(rottenRating, name, year);
+            })
+        }    
+    }).catch((err) => {});
 };
 
 function extractRottenTomatoesRating(ratings) {
